@@ -3,6 +3,7 @@ Cache
 go get -u -v  https://github.com/nurgali1212/cache.git
 
 Methods
+
 Set(key string, value any) error
 Get(key string) (any, error)
 Delete(key string) error
@@ -10,7 +11,7 @@ Delete(key string) error
   
   
   
-Examole
+Example
 
 package main
 
