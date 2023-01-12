@@ -3,31 +3,40 @@ package memory
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
 type Cache struct {
-	memory map[string]interface{}
+	memory map[string]itemCache
+	ttl    time.Duration
+}
+type itemCache struct {
+	value          interface{}
+	timeDeleteUnix int64
 }
 
 func New() *Cache {
-	return &Cache{memory: make(map[string]interface{})}
+	return &Cache{memory: make(map[string]itemCache)}
 }
 
-func (c *Cache) Set(key string, value interface{}) (err error) {
-	c.memory[key] = value
-	if err != nil {
-		fmt.Println("key not found")
+func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
+	c.memory[key] = itemCache{
+		value:          value,
+		timeDeleteUnix: time.Now().Add(duration).Unix(),
 	}
-	return
+
 
 }
 
-func (c *Cache) Get(key string) (interface{}, bool) {
-	_, ok := c.memory[key]
+func (c *Cache) Get(key string) (interface{}, error) {
+	itemCache, ok := c.memory[key]
 	if !ok {
-		return nil, false
+		return nil, errors.New(fmt.Sprintf("key %s not found", key))
 	}
-	return c.memory[key], true
+	if itemCache.timeDeleteUnix < time.Now().Unix() {
+		return nil, errors.New(fmt.Sprintf("key %s is outdated", key))
+	}
+	return itemCache.value, nil
 }
 
 func (c *Cache) Delete(key string) error {
@@ -38,6 +47,6 @@ func (c *Cache) Delete(key string) error {
 			return err
 		}
 	}
-	delete(c.memory,key)
+	delete(c.memory, key)
 	return nil
 }

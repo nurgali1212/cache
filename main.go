@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/nurgali1212/cache.git/memory"
 )
@@ -9,14 +11,20 @@ import (
 func main() {
 	cache := memory.New()
 
-	cache.Set("userId", 42)
-	userId, _ := cache.Get("userId")
+	cache.Set("userId", 42, time.Second*5)
+	userId, err := cache.Get("userId")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println(userId)
+	time.Sleep(time.Second * 6)
 
 	cache.Delete("userId")
-	userId, _ = cache.Get("userId")
+	userId, err = cache.Get("userId")
 
-	fmt.Println(userId)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
